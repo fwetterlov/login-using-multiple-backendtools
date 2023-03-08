@@ -1,5 +1,6 @@
 module.exports = { registerUser, getUserPassword, userIDExists };
 const sqlite3 = require("sqlite3").verbose();
+const bcrypt = require("bcrypt");
 
 const db = new sqlite3.Database("./lab4.db", sqlite3.OPEN_READWRITE, (err) => {
   if (err) return console.error(err.message);

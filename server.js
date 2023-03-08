@@ -6,11 +6,24 @@ const db = require('./database');
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
+let currentToken = "";
+
 app.use(express.urlencoded({ extended: false }));
 
 app.listen(process.env.PORT, (req, res) => {
   console.log("App is listening on " + process.env.PORT + "...");
 });
+
+function authenticateToken(req, res, next) {
+  if (currentToken === "") {
+    res.redirect("/login");
+  } else if (jwt.verify(currentToken, process.env.TOKEN_KEY)) {
+    next();
+    // res.cookie("jwt", token, { httpOnly: true }).status(200).render('start.ejs');
+  } else {
+    res.redirect("/login")
+  }
+}
 
 app.get("/", (req, res) => {
   res.redirect("/login");
@@ -33,8 +46,7 @@ app.post("/login", async (req, res) => {
     return res.render("fail.ejs")
   }
 
-  const token = jwt.sign({ name: userID }, 'secret-key');
-  console.log(`JWT token: ${token}`);
+  currentToken = jwt.sign(userID, process.env.TOKEN_KEY);
   res.render('start.ejs');
 });
 
@@ -55,3 +67,11 @@ app.post("/register", async (req, res) => {
     res.status(400).send("Invalid username or password");
   }
 });
+
+app.get("/admin", authenticateToken, (req, res) => {
+  res.render("admin.ejs")
+})
+
+app.get("/start", authenticateToken, (req, res) => {
+  res.render("start.ejs")
+})
