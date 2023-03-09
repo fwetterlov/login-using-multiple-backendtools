@@ -1,4 +1,4 @@
-module.exports = { registerUser, getUserPassword, userIDExists };
+module.exports = { registerUser, getUserPassword, userIDExists, getAllUsers };
 const sqlite3 = require("sqlite3").verbose();
 const bcrypt = require("bcrypt");
 
@@ -11,6 +11,19 @@ const db = new sqlite3.Database("./lab4.db", sqlite3.OPEN_READWRITE, (err) => {
 function cleanTable(tableName) {
   db.run(`DELETE FROM ${tableName}`);
   console.log(`Table ${tableName} has been cleaned.`);
+}
+
+function getAllUsers() {
+  const query = "SELECT * FROM Users"
+  return new Promise((resolve, reject) => {
+    db.all(query, (err, res) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(res);
+      }
+    });
+  });
 }
 
 async function getUserPassword(userID) {

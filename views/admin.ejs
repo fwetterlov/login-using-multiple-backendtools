@@ -1,2 +1,31 @@
 <h1>Admin</h1>
+<table>
+  <thead>
+    <tr>
+      <th>User ID</th>
+      <th>Role</th>
+      <th>Name</th>
+      <th>Password</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% users.forEach(user=> { %>
+      <tr>
+        <td>
+          <%= user.userID %>
+        </td>
+        <td>
+          <%= user.role %>
+        </td>
+        <td>
+          <%= user.name %>
+        </td>
+        <td>
+          <%= user.password %>
+        </td>
+      </tr>
+      <% }); %>
+  </tbody>
+</table>
+<br>
 <a href="/start">Start page</a>

@@ -68,9 +68,14 @@ app.post("/register", async (req, res) => {
   }
 });
 
-app.get("/admin", authenticateToken, (req, res) => {
-  res.render("admin.ejs")
-})
+app.get("/admin", authenticateToken, async (req, res) => {
+  try {
+    const users = await db.getAllUsers();
+    res.render("admin.ejs", { users });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 app.get("/start", authenticateToken, (req, res) => {
   res.render("start.ejs")
