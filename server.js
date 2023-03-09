@@ -5,36 +5,35 @@ require("dotenv").config();
 const db = require('./database');
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-
-let currentToken = "";
+const cookieParser = require('cookie-parser')
 
 app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser())
 
 app.listen(process.env.PORT, (req, res) => {
   console.log("App is listening on " + process.env.PORT + "...");
 });
 
 function authenticateToken(req, res, next) {
-  if (currentToken === "") {
+  if (!req.cookies.userToken) {
     res.redirect("/login");
-  } else if (jwt.verify(currentToken, process.env.TOKEN_KEY)) {
+  } else if (jwt.verify(req.cookies.userToken, process.env.TOKEN_KEY)) {
     next();
   } else {
-    res.redirect("/login")
+    res.redirect("/login");
   }
 }
 
 function authorizeRoles(roles) {
   return function (req, res, next) {
     try {
-      const decryptedToken = jwt.verify(currentToken, process.env.TOKEN_KEY);
+      const decryptedToken = jwt.verify(req.cookies.userToken, process.env.TOKEN_KEY);
 
       if (roles.includes(decryptedToken.role)) {
         next();
       } else {
-        console.log("You dont have access to this page.")
         currentToken = "";
-        res.redirect("/login");
+        res.status(401).render("login.ejs");
       }
     } catch (error) {
       console.log(error);
@@ -70,9 +69,8 @@ app.post("/login", async (req, res) => {
     role: role
   }
 
-  currentToken = jwt.sign(payload, process.env.TOKEN_KEY);
-  res.redirect("/start");
-  //res.render('start.ejs');
+  const token = jwt.sign(payload, process.env.TOKEN_KEY);
+  res.cookie("userToken", token, { httpOnly: true }).status(200).redirect("/start");
 });
 
 app.get("/register", (req, res) => {
@@ -108,4 +106,12 @@ app.get("/admin", authenticateToken, authorizeRoles("admin"), async (req, res) =
 
 app.get("/teacher", authenticateToken, authorizeRoles(["admin", "teacher"]), (req, res) => {
   res.render("teacher.ejs")
+})
+
+app.get("/student1", authenticateToken, authorizeRoles(["student1", "admin", "teacher"]), (req, res) => {
+  res.render("student1.ejs")
+})
+
+app.get("/student2", authenticateToken, authorizeRoles(["student2", "admin", "teacher"]), (req, res) => {
+  res.render("student2.ejs")
 })
