@@ -19,9 +19,26 @@ function authenticateToken(req, res, next) {
     res.redirect("/login");
   } else if (jwt.verify(currentToken, process.env.TOKEN_KEY)) {
     next();
-    // res.cookie("jwt", token, { httpOnly: true }).status(200).render('start.ejs');
   } else {
     res.redirect("/login")
+  }
+}
+
+function authorizeRoles(roles) {
+  return function (req, res, next) {
+    try {
+      const decryptedToken = jwt.verify(currentToken, process.env.TOKEN_KEY);
+
+      if (roles.includes(decryptedToken.role)) {
+        next();
+      } else {
+        console.log("You dont have access to this page.")
+        currentToken = "";
+        res.redirect("/login");
+      }
+    } catch (error) {
+      console.log(error);
+    }
   }
 }
 
@@ -46,8 +63,16 @@ app.post("/login", async (req, res) => {
     return res.render("fail.ejs")
   }
 
-  currentToken = jwt.sign(userID, process.env.TOKEN_KEY);
-  res.render('start.ejs');
+  const role = await db.getUserRole(userID);
+
+  const payload = {
+    userID: userID,
+    role: role
+  }
+
+  currentToken = jwt.sign(payload, process.env.TOKEN_KEY);
+  res.redirect("/start");
+  //res.render('start.ejs');
 });
 
 app.get("/register", (req, res) => {
@@ -68,7 +93,11 @@ app.post("/register", async (req, res) => {
   }
 });
 
-app.get("/admin", authenticateToken, async (req, res) => {
+app.get("/start", authenticateToken, (req, res) => {
+  res.render("start.ejs")
+})
+
+app.get("/admin", authenticateToken, authorizeRoles("admin"), async (req, res) => {
   try {
     const users = await db.getAllUsers();
     res.render("admin.ejs", { users });
@@ -77,6 +106,6 @@ app.get("/admin", authenticateToken, async (req, res) => {
   }
 });
 
-app.get("/start", authenticateToken, (req, res) => {
-  res.render("start.ejs")
+app.get("/teacher", authenticateToken, authorizeRoles(["admin", "teacher"]), (req, res) => {
+  res.render("teacher.ejs")
 })

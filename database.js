@@ -1,4 +1,4 @@
-module.exports = { registerUser, getUserPassword, userIDExists, getAllUsers };
+module.exports = { registerUser, getUserPassword, userIDExists, getAllUsers, getUserRole };
 const sqlite3 = require("sqlite3").verbose();
 const bcrypt = require("bcrypt");
 
@@ -27,13 +27,26 @@ function getAllUsers() {
 }
 
 async function getUserPassword(userID) {
-  const query = "SELECT password FROM users WHERE userID=?"
+  const query = "SELECT password FROM Users WHERE userID=?"
   return new Promise((resolve, reject) => {
     db.all(query, userID, (err, res) => {
       if (err) {
         reject(err);
       } else {
         resolve(res[0].password.toString());
+      }
+    });
+  });
+}
+
+async function getUserRole(userID) {
+  const query = "SELECT role FROM Users WHERE userID=?"
+  return new Promise((resolve, reject) => {
+    db.all(query, userID, (err, res) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(res[0].role.toString());
       }
     });
   });
