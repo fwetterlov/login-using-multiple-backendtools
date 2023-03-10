@@ -1,4 +1,4 @@
-module.exports = { registerUser, getUserPassword, userIDExists, getAllUsers, getUserRole };
+module.exports = { registerUser, getUserPassword, userIDExists, getAllUsers, getUserRole, getUserInfo };
 const sqlite3 = require("sqlite3").verbose();
 const bcrypt = require("bcrypt");
 
@@ -21,6 +21,30 @@ function getAllUsers() {
         reject(err);
       } else {
         resolve(res);
+      }
+    });
+  });
+}
+
+async function getUserInfo(userID) {
+  const query = "SELECT * FROM Users WHERE userID=?";
+  return new Promise((resolve, reject) => {
+    db.all(query, userID, (err, rows) => {
+      if (err) {
+        reject(err);
+      } else {
+        if (rows.length === 0) {
+          reject("User not found");
+        } else {
+          const user = {
+            userID: rows[0].userID,
+            role: rows[0].role,
+            name: rows[0].name,
+            password: rows[0].password.toString(),
+            // Add other columns as needed
+          };
+          resolve(user);
+        }
       }
     });
   });

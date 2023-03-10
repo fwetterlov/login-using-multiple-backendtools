@@ -70,7 +70,7 @@ app.post("/login", async (req, res) => {
   }
 
   const token = jwt.sign(payload, process.env.TOKEN_KEY);
-  res.cookie("userToken", token, { httpOnly: true }).status(200).redirect("/start");
+  res.cookie("userToken", token, { httpOnly: true }).status(200).redirect("/users/" + userID);
 });
 
 app.get("/register", (req, res) => {
@@ -94,6 +94,38 @@ app.post("/register", async (req, res) => {
 app.get("/start", authenticateToken, (req, res) => {
   res.render("start.ejs")
 })
+
+app.get("/users/:userID", authenticateToken, async (req, res) => {
+  try {
+    const user = await db.getUserInfo(req.params.userID);
+    const decryptedToken = jwt.verify(req.cookies.userToken, process.env.TOKEN_KEY);
+
+    if (req.params.userID !== decryptedToken.userID) {
+      return res.sendStatus(401);
+    }
+
+    switch (user.role) {
+      case "student1":
+        res.render("student1.ejs");
+        break;
+      case "student2":
+        res.render("student2.ejs");
+        break;
+      case "teacher":
+        res.render("teacher.ejs");
+        break;
+      case "admin":
+        const users = await db.getAllUsers();
+        res.render("admin.ejs", { users });
+        break;
+      default:
+        res.status(404).send("User not found");
+        break;
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 app.get("/admin", authenticateToken, authorizeRoles("admin"), async (req, res) => {
   try {
