@@ -1,1 +1,15 @@
 <h1>Teacher</h1>
+<h4>All your students</h4>
+<ul type="none">
+  <% users.forEach(user=> { %>
+    <li>
+      <strong>User ID:</strong>
+      <%= user.userID %><br>
+        <strong>Role:</strong>
+        <%= user.role %><br>
+          <strong>Name:</strong>
+          <%= user.name %><br>
+    </li>
+    <br>
+    <% }); %>
+</ul>

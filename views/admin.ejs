@@ -1,31 +1,17 @@
 <h1>Admin</h1>
-<table>
-  <thead>
-    <tr>
-      <th>User ID</th>
-      <th>Role</th>
-      <th>Name</th>
-      <th>Password</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% users.forEach(user=> { %>
-      <tr>
-        <td>
-          <%= user.userID %>
-        </td>
-        <td>
-          <%= user.role %>
-        </td>
-        <td>
-          <%= user.name %>
-        </td>
-        <td>
-          <%= user.password %>
-        </td>
-      </tr>
-      <% }); %>
-  </tbody>
-</table>
-<br>
-<a href="/start">Start page</a>
+<h4>All users from the database</h4>
+<ul type="none">
+  <% users.forEach(user=> { %>
+    <li>
+      <strong>User ID:</strong>
+      <%= user.userID %><br>
+        <strong>Role:</strong>
+        <%= user.role %><br>
+          <strong>Name:</strong>
+          <%= user.name %><br>
+            <strong>Password:</strong>
+            <%= user.password %>
+    </li>
+    <br>
+    <% }); %>
+</ul>
