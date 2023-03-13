@@ -97,6 +97,25 @@ app.get("/users/:userID", authenticateToken, async (req, res) => {
   }
 });
 
+// Grade 4
+app.get("/teacher", authenticateToken, authorizeRoles(["admin", "teacher"]), async (req, res) => {
+  const allUsers = await db.getAllUsers();
+  const studentUsers = allUsers.filter(user => user.role.toLowerCase().includes("student"));
+  res.render("teacher.ejs", { users: studentUsers });
+})
+
+app.get("/student1", authenticateToken, authorizeRoles(["student1", "admin", "teacher"]), async (req, res) => {
+  const decryptedToken = jwt.verify(req.cookies.userToken, process.env.TOKEN_KEY);
+  const user = await db.getUserInfo(decryptedToken.userID);
+  res.render("student1.ejs", { user });
+})
+
+app.get("/student2", authenticateToken, authorizeRoles(["student2", "admin", "teacher"]), async (req, res) => {
+  const decryptedToken = jwt.verify(req.cookies.userToken, process.env.TOKEN_KEY);
+  const user = await db.getUserInfo(decryptedToken.userID);
+  res.render("student2.ejs", { user });
+})
+
 // Grade 3
 function authenticateToken(req, res, next) {
   if (!req.cookies.userToken) {
@@ -137,22 +156,3 @@ app.get("/admin", authenticateToken, authorizeRoles("admin"), async (req, res) =
     res.status(500).json({ error: err.message });
   }
 });
-
-// Grade 4
-app.get("/teacher", authenticateToken, authorizeRoles(["admin", "teacher"]), async (req, res) => {
-  const allUsers = await db.getAllUsers();
-  const studentUsers = allUsers.filter(user => user.role.toLowerCase().includes("student"));
-  res.render("teacher.ejs", { users: studentUsers });
-})
-
-app.get("/student1", authenticateToken, authorizeRoles(["student1", "admin", "teacher"]), async (req, res) => {
-  const decryptedToken = jwt.verify(req.cookies.userToken, process.env.TOKEN_KEY);
-  const user = await db.getUserInfo(decryptedToken.userID);
-  res.render("student1.ejs", { user });
-})
-
-app.get("/student2", authenticateToken, authorizeRoles(["student2", "admin", "teacher"]), async (req, res) => {
-  const decryptedToken = jwt.verify(req.cookies.userToken, process.env.TOKEN_KEY);
-  const user = await db.getUserInfo(decryptedToken.userID);
-  res.render("student2.ejs", { user });
-})
